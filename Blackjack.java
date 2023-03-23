@@ -18,22 +18,31 @@ enum Mazo{
 }
 public class Blackjack{
     public static void main(String[] args){
-
+        int creditos = 100;
+        int apuesta = perdirApuesta(creditos);
     }
     public static Mazo[] repartirCartasIniciales(){
-        perdirApuesta(0, 0);
+        
+
         
     }
 
     //Método para determinar si la apuesta es valida.
-    public static int perdirApuesta(int apuesta, int creditos){ 
+    public static int perdirApuesta(int creditos){ 
         int i = 0;
+        Scanner leer = new Scanner(System.in);
+        System.out.println("Introduza la cantidad de créditos que desea apostar:");
+        int apuesta = leer.nextInt();
+        // Loop para asegurar que la apuesta es válida.
         while (apuesta < 10 && apuesta > creditos && i < 10){
-            System.out.println("Apuesta invalida, por favor ingresé una apuesta mayor o igual a 10 créditos.");
+            System.out.println("Apuesta inválida, por favor ingresé una apuesta mayor o igual a 10 créditos:");
+            apuesta = leer.nextInt();
             i++;
         }
+        // Si la cantidad de intentos es mas de 10, entonces se le asignara una apuesta de 10 créditos al jugador.
         if (i >= 10){
             apuesta = 10;
+            System.out.println("Cantidad de intentos excedida, su apuesta fue asignada a 10 créditos.");
         }
         return apuesta;
     }
