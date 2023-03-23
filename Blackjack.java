@@ -21,10 +21,18 @@ public class Blackjack{
         int creditos = 100;
         int apuesta = perdirApuesta(creditos);
     }
+    // Método para repartir cartas iniciales.
     public static Mazo[] repartirCartasIniciales(){
-        
-
-        
+        Mazo[] mano = new Mazo[21];
+        int cartasIniciales = 2;
+        int i = 0;         
+        int cartasMazo = Mazo.values().length;
+        while ( i < cartasIniciales ){
+            int carta = (int) (Math.random() * cartasMazo);
+            mano[i] = Mazo.values()[carta];
+            i++;
+        }
+        return mano;
     }
 
     //Método para determinar si la apuesta es valida.
