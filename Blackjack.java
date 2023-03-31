@@ -1,5 +1,7 @@
 import java.util.Scanner;
 
+import java.awt.Font;
+
 enum Carta{
     DIAMANTE_AS, TREBOL_AS, CORAZON_AS, PICAS_AS,
     DIAMANTE_2, TREBOL_2, CORAZON_2, PICAS_2,
@@ -49,6 +51,7 @@ public class Blackjack{
         int apuestaMinima = 10;
         int juegos = 0;
         int juegosMaximos = 10;
+        boolean continuarJuego = true;
 
         System.out.println("Bienvenido a Blackjack!");
         System.out.println("Por favor ingrese su nombre: ");
@@ -56,7 +59,7 @@ public class Blackjack{
         String jugador = leer.nextLine();
         System.out.println("Hola " + jugador + ".");
 
-        while (juegos < juegosMaximos && creditos >= apuestaMinima){
+        while (juegos < juegosMaximos && creditos >= apuestaMinima && continuarJuego){
             System.out.println("Tienes " + creditos + " créditos.");
             int apuesta = perdirApuesta(creditos);
             creditos = creditos - apuesta;
@@ -71,7 +74,24 @@ public class Blackjack{
             // Repartir cartas y obtener el válor de las cartas del jugador.
             manoJugador = repartirCartasIniciales(mazo);
             manoValorJugador = valorCartas(manoCrupier, numeroCartas, false);
+            // Mostrar cartas del jugador.
+            System.out.println(jugador + ", estas son tus cartas: ");
+            System.out.println(manoJugador[0] + " y " + manoJugador[1]);
+
+            // Repartir cartas y obtneer el válor de las cartasd del crupier.
+            manoCrupier = repartirCartasIniciales(mazo);
+            manoValorCrupier = valorCartas(manoCrupier, numeroCartas, true);
+            // Mostrar la primera carta del crupier.
+            System.out.println("La primera carta del crupier es: ");
+            System.out.println(manoCrupier[0]);
+
+            MaquinaDeTrazados mt = new MaquinaDeTrazados(1400, 700, "JUEGO", Colores.DARK_GRAY);
+            mostrarCartas(mt, manoJugador);
+            
+            leer.nextLine();
+            continuarJuego = false;
         }
+        leer.close();
         
     }
     // Método para repartir cartas iniciales.
@@ -110,7 +130,11 @@ public class Blackjack{
         return apuesta;
 
     }
-    // Método para calcular el valor de la mano.
+    // Método para calculagr el valor de la mano.
+    //@ requires mano != null;
+	//@ requires numeroCartas.length > 0;
+	//@ requires esCrupier == true || esCrupier == false;
+	//@ ensures \result >= 0 || \result < 0;
     public static int valorCartas(Carta[] mano, int[] numeroCartas, boolean esCrupier){
         int valor = 0;
         int i = 0;
@@ -122,10 +146,155 @@ public class Blackjack{
         if (esCrupier == true){
             cantidaDeCartas = cantidaDeCartas - 1;
         } 
+        //@ maintaining 0 <= i <= cantidaDeCartas;
+    	//@ decreases cantidaDeCartas - i;
         while (i < cantidaDeCartas){
             valor = valor + numeroCartas[mano[i].ordinal()];
             i++;
         }
         return valor;
+    }
+
+    public static void mostrarCartas(MaquinaDeTrazados mt, Carta[] mano){
+        String[] simbolo;
+        simbolo = new String[]{
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "JOKER", "JOKER", "JOKER", "JOKER"
+            };
+
+        String[] caracterEsquina;
+        caracterEsquina = new String[]{
+            "A", "A", "A", "A",
+            "2", "2", "2", "2",
+            "3", "3", "3", "3",
+            "4", "4", "4", "4",
+            "5", "5", "5", "5",
+            "6", "6", "6", "6",
+            "7", "7", "7", "7",
+            "8", "8", "8", "8",
+            "9", "9", "9", "9",
+            "10", "10", "10", "10",
+            "10", "10", "10", "10",
+            "10", "10", "10", "10",
+            "10", "10", "10", "10",
+            "JOKER", "JOKER", "JOKER", "JOKER"
+        };
+        int x = mt.XMAX;
+        int y = mt.YMAX;
+        int centroX = x/2 - x/6 - x/36;
+        int centroY = y/2 + y/8;
+        int i = 0;
+        int separador = 0;
+        while (i < mano.length){
+            mt.dibujarRectanguloLleno(x/2 - x/6 - x/36 + separador, y/2 + y/8, 150, 200, Colores.WHITE);
+            mt.dibujarRectangulo(x/2 - x/6 - x/36 + separador, y/2 + y/8, 150, 200, Colores.RED);
+            if (simbolo[mano[i].ordinal()] == "DIAMANTE"){
+                dibujarDiamante(mt, i, separador, caracterEsquina, mano);
+            }
+
+            else if (simbolo[mano[i].ordinal()] == "CORAZON"){
+                dibujarCorazon(mt, i, separador, caracterEsquina, mano);
+            }
+            
+            else if (simbolo[mano[i].ordinal()] == "TREBOL"){
+                dibujarTrebol(mt, i, separador, caracterEsquina, mano);
+            }
+
+            else if (simbolo[mano[i].ordinal()] == "PICAS"){
+                dibujarPicas(mt, i, separador, caracterEsquina, mano);
+            }
+
+            else{
+                dibujarJoker(mt, i, separador, caracterEsquina, mano);
+            }
+            separador = separador + 200;
+            i++;
+        }
+        mt.mostrar();
+    }
+
+    public static void dibujarDiamante(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano){
+        int x = mt.XMAX;
+        int y = mt.YMAX;
+        int centroX = x/2 - x/6 - x/36;
+        int centroY = y/2 + y/8;
+
+        int[] enX = {centroX + x/25 - 30 + separador, centroX + x/13 - 30 + separador, centroX + x/9 - 30 + separador, centroX + x/13 - 30 + separador};
+		int[] enY = {centroY + y/7 , centroY + y/5 , centroY + y/7, centroY + y/13};
+		mt.dibujarPoligonoLleno(enX, enY, 4, Colores.RED);
+
+        mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36, y/2 + y/8 + 20, Colores.RED);
+		mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36 + 125, y/2 + y/8 + y/3 - 40, Colores.RED);
+    }
+
+    public static void dibujarCorazon(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano){
+        int x = mt.XMAX;
+        int y = mt.YMAX;
+        int centroX = x/2 - x/6 - x/36;
+        int centroY = y/2 + y/8;
+
+        int[] enX = {centroX + x/24 - 40 + separador, centroX + x/12 - 40 + separador, centroX + x/12 + x/24 - 40 + separador, centroX + x/12 + x/24 - 40 + separador, centroX + x/12 + x/48 - 40 + separador, centroX + x/12 - 40 + separador, centroX + x/24 + x/48 - 40 + separador, centroX + x/24 - 40 + separador};
+		int[] enY = {centroY + y/6 - 30, centroY + y/6 + y/12 - 30, centroY + y/6 - 30, centroY + y/12 + y/18 - 30, centroY + y/12 + y/36 - 30, centroY + y/12 + y/18 - 30, centroY + y/12 + y/36 - 30, centroY + y/12 + y/18 - 30};
+		mt.dibujarPoligonoLleno(enX, enY, 8, Colores.RED);
+
+        mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36, y/2 + y/8 + 20, Colores.RED);
+		mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36 + 125, y/2 + y/8 + y/3 - 40, Colores.RED);
+    }
+
+    public static void dibujarTrebol(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano){
+        int x = mt.XMAX;
+        int y = mt.YMAX;
+        int centroX = x/2 - x/6 - x/36;
+        int centroY = y/2 + y/8;
+
+        mt.dibujarOvaloLleno(centroX + x/24 + x/48 - 40 + separador, centroY + y/12 - 30, x/24, y/12, Colores.BLACK);
+		mt.dibujarOvaloLleno(centroX + x/24 - 40 + separador, centroY + y/6 - 30, x/24, y/12, Colores.BLACK);
+		mt.dibujarOvaloLleno(centroX + x/12 - 40 + separador, centroY + y/6 - 30, x/24, y/12, Colores.BLACK);
+
+        mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36, y/2 + y/8 + 20, Colores.BLACK);
+		mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36 + 125, y/2 + y/8 + y/3 - 40, Colores.BLACK);
+    }
+
+    public static void dibujarPicas(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano){
+        int x = mt.XMAX;
+        int y = mt.YMAX;
+        int centroX = x/2 - x/6 - x/36;
+        int centroY = y/2 + y/8;
+
+        int[] enX = {centroX + x/24 - 40 + separador, centroX + x/24 + x/48 - 40 + separador, centroX + x/12 + x/48 - 40 + separador, centroX + x/12 + x/24 - 40 + separador, centroX + x/12 + x/24 - 40 + separador, centroX + x/12 - 40 + separador, centroX + x/24 - 40 + separador};
+		int[] enY = {centroY + y/6 + y/24 - 30, centroY + y/6 + y/12 - 30, centroY + y/6 + y/12 - 30, centroY + y/6 + y/24 - 30, centroY + y/12 + y/18 - 30, centroY + y/12 - 30, centroX + y/12 + y/18 - 30};
+		int[] enelX = {centroX + x/24 + x/48 - 40 + separador, centroX + x/12 + x/48 - 40 + separador, centroX + x/12 - 40 + separador};
+		int[] enelY = {centroY + y/6 + y/12 + y/36 - 30, centroY + y/6 + y/12 + y/36 - 30, centroY + y/6 + y/12 - 30};
+		mt.dibujarPoligonoLleno(enX, enY, 7);
+		mt.dibujarPoligonoLleno(enelX, enelY, 3);
+
+        mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36, y/2 + y/8 + 20, Colores.BLACK);
+		mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36 + 125, y/2 + y/8 + y/3 - 40, Colores.BLACK);
+    }
+
+    public static void dibujarJoker(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano){
+        int x = mt.XMAX;
+        int y = mt.YMAX;
+        int centroX = x/2 - x/6 - x/36;
+        int centroY = y/2 + y/8;
+
+        int[] enX = {centroX + x/36 - 40 + separador, centroX + x/24 + x/72 - 40 + separador, centroX + x/24 - 40 + separador, centroX + x/12 - 40 + separador,  centroX + x/24 + x/12 - 40 + separador, centroX + x/12 + x/36 - 40 + separador, centroX + x/12 + x/24 + x/72 - 40 + separador, centroX + x/12 + x/72 - 40 + separador, centroX + x/12 - 40 + separador, centroX + x/24 + x/36 - 40 + separador};
+        int[] enY = {centroY + y/6 - 30, centroY + y/6 + y/36 - 30, centroY + y/6 + y/12 - 30, centroY + y/6 + y/24 - 30, centroY + y/6 + y/12 - 30, centroY + y/6 + y/36 - 30, centroY + y/6 - 30, centroY + y/6 - 30, centroY + y/12 + y/36 - 30, centroY + y/6 - 30};
+        mt.dibujarPoligonoLleno(enX, enY,  10, Colores.GREEN);
+
+        mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36, y/2 + y/8 + 20, Colores.BLACK);
+        mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36 + 125, y/2 + y/8 + y/3 - 40, Colores.BLACK);
     }
 }
