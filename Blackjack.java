@@ -73,20 +73,23 @@ public class Blackjack{
 
             // Repartir cartas y obtener el válor de las cartas del jugador.
             manoJugador = repartirCartasIniciales(mazo);
-            manoValorJugador = valorCartas(manoCrupier, numeroCartas, false);
-            // Mostrar cartas del jugador.
-            System.out.println(jugador + ", estas son tus cartas: ");
+            manoValorJugador = valorCartas(manoJugador, numeroCartas, 2);
+            // Mostrar cartas del jugador y su valor.
+            System.out.println(jugador + ", estas son tus cartas y el valor de ellas: ");
             System.out.println(manoJugador[0] + " y " + manoJugador[1]);
-
+            System.out.println("Valor: " + manoValorJugador);
             // Repartir cartas y obtneer el válor de las cartasd del crupier.
             manoCrupier = repartirCartasIniciales(mazo);
-            manoValorCrupier = valorCartas(manoCrupier, numeroCartas, true);
-            // Mostrar la primera carta del crupier.
+            manoValorCrupier = valorCartas(manoCrupier, numeroCartas, 1);
+            // Mostrar la primera carta del crupier y su valor.
             System.out.println("La primera carta del crupier es: ");
             System.out.println(manoCrupier[0]);
+            System.out.println("Y su valor es: " + manoValorCrupier);
 
             MaquinaDeTrazados mt = new MaquinaDeTrazados(1400, 700, "JUEGO", Colores.DARK_GRAY);
-            mostrarCartas(mt, manoJugador);
+            dibujarCartasJugador(mt, manoJugador, 2);
+            dibujarCartasCrupier(mt, manoCrupier, 2);
+            mt.mostrar();
             
             leer.nextLine();
             continuarJuego = false;
@@ -112,10 +115,10 @@ public class Blackjack{
     public static int perdirApuesta(int creditos){ 
         int i = 0;
         Scanner leer = new Scanner(System.in);
-        System.out.println("Introduza la cantidad de créditos que desea apostar:");
+        System.out.println("Introduza la cantidad de créditos que desea apostar(la cantidad mínima de créditos que se pueden apostar es 10):");
         int apuesta = leer.nextInt();
         // Loop para asegurar que la apuesta es válida.
-        while (apuesta < 10 && apuesta > creditos && i < 10){
+        while ((apuesta < 10 && i < 10) || apuesta > creditos){
             System.out.println("Apuesta inválida, por favor ingresé una apuesta mayor o igual a 10 créditos:");
             apuesta = leer.nextInt();
             i++;
@@ -133,19 +136,11 @@ public class Blackjack{
     // Método para calculagr el valor de la mano.
     //@ requires mano != null;
 	//@ requires numeroCartas.length > 0;
-	//@ requires esCrupier == true || esCrupier == false;
 	//@ ensures \result >= 0 || \result < 0;
-    public static int valorCartas(Carta[] mano, int[] numeroCartas, boolean esCrupier){
+    public static int valorCartas(Carta[] mano, int[] numeroCartas, int cantidaDeCartas){
         int valor = 0;
         int i = 0;
-        int cantidaDeCartas = mano.length;
-        /*  Si "esCrupier" es verdad, se le resta 1 a la cantidad de cartas a contar, ya que solo queremos
-            mostrar el valor de la primera carta del crupier.       
-        */
-        
-        if (esCrupier == true){
-            cantidaDeCartas = cantidaDeCartas - 1;
-        } 
+    
         //@ maintaining 0 <= i <= cantidaDeCartas;
     	//@ decreases cantidaDeCartas - i;
         while (i < cantidaDeCartas){
@@ -154,8 +149,8 @@ public class Blackjack{
         }
         return valor;
     }
-
-    public static void mostrarCartas(MaquinaDeTrazados mt, Carta[] mano){
+    // Método para dibujar las cartas del jugador.
+    public static void dibujarCartasJugador(MaquinaDeTrazados mt, Carta[] mano, int cantidaDeCartas){
         String[] simbolo;
         simbolo = new String[]{
             "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
@@ -191,87 +186,157 @@ public class Blackjack{
             "10", "10", "10", "10",
             "JOKER", "JOKER", "JOKER", "JOKER"
         };
+        mt.configurarFuente("Monospaced", Font.PLAIN, 24);
         int x = mt.XMAX;
         int y = mt.YMAX;
         int centroX = x/2 - x/6 - x/36;
         int centroY = y/2 + y/8;
         int i = 0;
         int separador = 0;
-        while (i < mano.length){
+        while (i < cantidaDeCartas){
             mt.dibujarRectanguloLleno(x/2 - x/6 - x/36 + separador, y/2 + y/8, 150, 200, Colores.WHITE);
             mt.dibujarRectangulo(x/2 - x/6 - x/36 + separador, y/2 + y/8, 150, 200, Colores.RED);
             if (simbolo[mano[i].ordinal()] == "DIAMANTE"){
-                dibujarDiamante(mt, i, separador, caracterEsquina, mano);
+                dibujarDiamante(mt, i, separador, caracterEsquina, mano, centroX, centroY);
             }
 
             else if (simbolo[mano[i].ordinal()] == "CORAZON"){
-                dibujarCorazon(mt, i, separador, caracterEsquina, mano);
+                dibujarCorazon(mt, i, separador, caracterEsquina, mano, centroX, centroY);
             }
             
             else if (simbolo[mano[i].ordinal()] == "TREBOL"){
-                dibujarTrebol(mt, i, separador, caracterEsquina, mano);
+                dibujarTrebol(mt, i, separador, caracterEsquina, mano, centroX, centroY);
             }
 
             else if (simbolo[mano[i].ordinal()] == "PICAS"){
-                dibujarPicas(mt, i, separador, caracterEsquina, mano);
+                dibujarPicas(mt, i, separador, caracterEsquina, mano, centroX, centroY);
             }
 
             else{
-                dibujarJoker(mt, i, separador, caracterEsquina, mano);
+                dibujarJoker(mt, i, separador, caracterEsquina, mano, centroX, centroY);
             }
             separador = separador + 200;
             i++;
         }
-        mt.mostrar();
     }
+    // Método para dibujar las cartas del crupier.
+    public static void dibujarCartasCrupier(MaquinaDeTrazados mt, Carta[] mano, int cantidaDeCartas){
+        String[] simbolo;
+        simbolo = new String[]{
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "DIAMANTE", "TREBOL", "CORAZON", "PICAS",
+            "JOKER", "JOKER", "JOKER", "JOKER"
+            };
 
-    public static void dibujarDiamante(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano){
+        String[] caracterEsquina;
+        caracterEsquina = new String[]{
+            "A", "A", "A", "A",
+            "2", "2", "2", "2",
+            "3", "3", "3", "3",
+            "4", "4", "4", "4",
+            "5", "5", "5", "5",
+            "6", "6", "6", "6",
+            "7", "7", "7", "7",
+            "8", "8", "8", "8",
+            "9", "9", "9", "9",
+            "10", "10", "10", "10",
+            "10", "10", "10", "10",
+            "10", "10", "10", "10",
+            "10", "10", "10", "10",
+            "JOKER", "JOKER", "JOKER", "JOKER"
+        };
+        mt.configurarFuente("Monospaced", Font.PLAIN, 24);
         int x = mt.XMAX;
         int y = mt.YMAX;
         int centroX = x/2 - x/6 - x/36;
-        int centroY = y/2 + y/8;
+        int centroY = y/17;
+        int i = 0;
+        int separador = 0;
+        while (i < 1){
+            mt.dibujarRectanguloLleno(centroX + separador, centroY, 150, 200, Colores.WHITE);
+            mt.dibujarRectangulo(centroX + separador, centroY, 150, 200, Colores.RED);
+            if (simbolo[mano[i].ordinal()] == "DIAMANTE"){
+                dibujarDiamante(mt, i, separador, caracterEsquina, mano, centroX, centroY);
+            }
+
+            else if (simbolo[mano[i].ordinal()] == "CORAZON"){
+                dibujarCorazon(mt, i, separador, caracterEsquina, mano, centroX, centroY);
+            }
+            
+            else if (simbolo[mano[i].ordinal()] == "TREBOL"){
+                dibujarTrebol(mt, i, separador, caracterEsquina, mano, centroX, centroY);
+            }
+
+            else if (simbolo[mano[i].ordinal()] == "PICAS"){
+                dibujarPicas(mt, i, separador, caracterEsquina, mano, centroX, centroY);
+            }
+
+            else{
+                dibujarJoker(mt, i, separador, caracterEsquina, mano, centroX, centroY);
+            }
+            separador = separador + 200;
+            i++;
+        }
+        
+        while (i < cantidaDeCartas){
+            mt.dibujarRectanguloLleno(centroX + separador, centroY, 150, 200, Colores.RED);
+            mt.dibujarRectangulo(centroX + separador, centroY, 150, 200, Colores.WHITE);
+            separador = separador + 200;
+            i++;
+        }
+    }
+
+    public static void dibujarDiamante(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano, int centroX, int centroY){
+        int x = mt.XMAX;
+        int y = mt.YMAX;
 
         int[] enX = {centroX + x/25 - 30 + separador, centroX + x/13 - 30 + separador, centroX + x/9 - 30 + separador, centroX + x/13 - 30 + separador};
 		int[] enY = {centroY + y/7 , centroY + y/5 , centroY + y/7, centroY + y/13};
 		mt.dibujarPoligonoLleno(enX, enY, 4, Colores.RED);
 
-        mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36, y/2 + y/8 + 20, Colores.RED);
-		mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36 + 125, y/2 + y/8 + y/3 - 40, Colores.RED);
+        mt.dibujarString(caracterEsquina[mano[i].ordinal()], centroX + separador, centroY + 20, Colores.RED);
+		mt.dibujarString(caracterEsquina[mano[i].ordinal()], centroX + 125 + separador, centroY + y/3 - 40, Colores.RED);
     }
 
-    public static void dibujarCorazon(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano){
+    public static void dibujarCorazon(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano, int centroX, int centroY){
         int x = mt.XMAX;
         int y = mt.YMAX;
-        int centroX = x/2 - x/6 - x/36;
-        int centroY = y/2 + y/8;
+        
 
         int[] enX = {centroX + x/24 - 40 + separador, centroX + x/12 - 40 + separador, centroX + x/12 + x/24 - 40 + separador, centroX + x/12 + x/24 - 40 + separador, centroX + x/12 + x/48 - 40 + separador, centroX + x/12 - 40 + separador, centroX + x/24 + x/48 - 40 + separador, centroX + x/24 - 40 + separador};
 		int[] enY = {centroY + y/6 - 30, centroY + y/6 + y/12 - 30, centroY + y/6 - 30, centroY + y/12 + y/18 - 30, centroY + y/12 + y/36 - 30, centroY + y/12 + y/18 - 30, centroY + y/12 + y/36 - 30, centroY + y/12 + y/18 - 30};
 		mt.dibujarPoligonoLleno(enX, enY, 8, Colores.RED);
 
-        mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36, y/2 + y/8 + 20, Colores.RED);
-		mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36 + 125, y/2 + y/8 + y/3 - 40, Colores.RED);
+        mt.dibujarString(caracterEsquina[mano[i].ordinal()], centroX + separador, centroY + 20, Colores.RED);
+		mt.dibujarString(caracterEsquina[mano[i].ordinal()], centroX + 125 + separador, centroY + y/3 - 40, Colores.RED);
     }
 
-    public static void dibujarTrebol(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano){
+    public static void dibujarTrebol(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano, int centroX, int centroY){
         int x = mt.XMAX;
         int y = mt.YMAX;
-        int centroX = x/2 - x/6 - x/36;
-        int centroY = y/2 + y/8;
 
         mt.dibujarOvaloLleno(centroX + x/24 + x/48 - 40 + separador, centroY + y/12 - 30, x/24, y/12, Colores.BLACK);
 		mt.dibujarOvaloLleno(centroX + x/24 - 40 + separador, centroY + y/6 - 30, x/24, y/12, Colores.BLACK);
 		mt.dibujarOvaloLleno(centroX + x/12 - 40 + separador, centroY + y/6 - 30, x/24, y/12, Colores.BLACK);
 
-        mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36, y/2 + y/8 + 20, Colores.BLACK);
-		mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36 + 125, y/2 + y/8 + y/3 - 40, Colores.BLACK);
+        mt.dibujarString(caracterEsquina[mano[i].ordinal()], centroX + separador, centroY + 20, Colores.BLACK);
+		mt.dibujarString(caracterEsquina[mano[i].ordinal()], centroX + 125 + separador, centroY + y/3 - 40, Colores.BLACK);
     }
 
-    public static void dibujarPicas(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano){
+    public static void dibujarPicas(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano, int centroX, int centroY){
         int x = mt.XMAX;
         int y = mt.YMAX;
-        int centroX = x/2 - x/6 - x/36;
-        int centroY = y/2 + y/8;
 
         int[] enX = {centroX + x/24 - 40 + separador, centroX + x/24 + x/48 - 40 + separador, centroX + x/12 + x/48 - 40 + separador, centroX + x/12 + x/24 - 40 + separador, centroX + x/12 + x/24 - 40 + separador, centroX + x/12 - 40 + separador, centroX + x/24 - 40 + separador};
 		int[] enY = {centroY + y/6 + y/24 - 30, centroY + y/6 + y/12 - 30, centroY + y/6 + y/12 - 30, centroY + y/6 + y/24 - 30, centroY + y/12 + y/18 - 30, centroY + y/12 - 30, centroX + y/12 + y/18 - 30};
@@ -280,21 +345,19 @@ public class Blackjack{
 		mt.dibujarPoligonoLleno(enX, enY, 7);
 		mt.dibujarPoligonoLleno(enelX, enelY, 3);
 
-        mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36, y/2 + y/8 + 20, Colores.BLACK);
-		mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36 + 125, y/2 + y/8 + y/3 - 40, Colores.BLACK);
+        mt.dibujarString(caracterEsquina[mano[i].ordinal()], centroX + separador, centroY + 20, Colores.BLACK);
+		mt.dibujarString(caracterEsquina[mano[i].ordinal()], centroX + 125 + separador, centroY + y/3 - 40, Colores.BLACK);
     }
 
-    public static void dibujarJoker(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano){
+    public static void dibujarJoker(MaquinaDeTrazados mt, int i, int separador, String[] caracterEsquina, Carta[] mano, int centroX, int centroY){
         int x = mt.XMAX;
         int y = mt.YMAX;
-        int centroX = x/2 - x/6 - x/36;
-        int centroY = y/2 + y/8;
 
         int[] enX = {centroX + x/36 - 40 + separador, centroX + x/24 + x/72 - 40 + separador, centroX + x/24 - 40 + separador, centroX + x/12 - 40 + separador,  centroX + x/24 + x/12 - 40 + separador, centroX + x/12 + x/36 - 40 + separador, centroX + x/12 + x/24 + x/72 - 40 + separador, centroX + x/12 + x/72 - 40 + separador, centroX + x/12 - 40 + separador, centroX + x/24 + x/36 - 40 + separador};
         int[] enY = {centroY + y/6 - 30, centroY + y/6 + y/36 - 30, centroY + y/6 + y/12 - 30, centroY + y/6 + y/24 - 30, centroY + y/6 + y/12 - 30, centroY + y/6 + y/36 - 30, centroY + y/6 - 30, centroY + y/6 - 30, centroY + y/12 + y/36 - 30, centroY + y/6 - 30};
         mt.dibujarPoligonoLleno(enX, enY,  10, Colores.GREEN);
 
-        mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36, y/2 + y/8 + 20, Colores.BLACK);
-        mt.dibujarString(caracterEsquina[mano[i].ordinal()], x/2 - x/6 - x/36 + 125, y/2 + y/8 + y/3 - 40, Colores.BLACK);
+        mt.dibujarString(caracterEsquina[mano[i].ordinal()], centroX + separador, centroY + 20, Colores.BLACK);
+        
     }
 }
